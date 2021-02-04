@@ -1,6 +1,8 @@
 package br.com.alura.escolalura.codecs;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.bson.BsonReader;
 import org.bson.BsonString;
@@ -15,6 +17,8 @@ import org.bson.types.ObjectId;
 
 import br.com.alura.escolalura.models.Aluno;
 import br.com.alura.escolalura.models.Curso;
+import br.com.alura.escolalura.models.Habilidade;
+import br.com.alura.escolalura.models.Nota;
 
 public class AlunoCodec implements CollectibleCodec<Aluno> {
 
@@ -32,8 +36,8 @@ public class AlunoCodec implements CollectibleCodec<Aluno> {
 		String nome = aluno.getNome();
 		Date dataNascimento = aluno.getDataNascimento();
 		Curso curso = aluno.getCurso();
-//		List<Habilidade> habilidades = aluno.getHabilidades();
-//		List<Nota> notas = aluno.getNotas();
+		List<Habilidade> habilidades = aluno.getHabilidades();
+		List<Nota> notas = aluno.getNotas();
 //		Contato contato = aluno.getContato();
 
 		document.put("_id", id);
@@ -41,22 +45,22 @@ public class AlunoCodec implements CollectibleCodec<Aluno> {
 		document.put("data_nascimento", dataNascimento);
 		document.put("curso", new Document().append("nome", curso.getNome()));
 
-//		if (habilidades != null) {
-//			List<Document> habilidadesDocument = new ArrayList<Document>();
-//			for (Habilidade habilidade : habilidades) {
-//				habilidadesDocument.add(
-//						new Document().append("nome", habilidade.getNome()).append("nivel", habilidade.getNivel()));
-//			}
-//			document.put("habilidades", habilidadesDocument);
-//		}
+		if (habilidades != null) {
+			List<Document> habilidadesDocument = new ArrayList<Document>();
+			for (Habilidade habilidade : habilidades) {
+				habilidadesDocument.add(
+						new Document().append("nome", habilidade.getNome()).append("nível", habilidade.getNivel()));
+			}
+			document.put("habilidades", habilidadesDocument);
+		}
 
-//		if (notas != null) {
-//			List<Document> notasDocument = new ArrayList<Document>();
-//			for (Nota nota : notas) {
-//				notasDocument.add(new Document().append("valor", nota.getValor()));
-//			}
-//			document.put("notas", notasDocument);
-//		}
+		if (notas != null) {
+			List<Double> notasParaSalvar = new ArrayList<>();
+			for (Nota nota : notas) {
+				notasParaSalvar.add(nota.getValor());
+			}
+			document.put("notas", notasParaSalvar);
+		}
 
 //		List<Double> coordinates = new ArrayList<Double>();
 //		for (Double location : contato.getCoordinates()) {
@@ -90,23 +94,24 @@ public class AlunoCodec implements CollectibleCodec<Aluno> {
 			aluno.setCurso(new Curso(nomeCurso));
 		}
 
-//		List<Document> notasDocument = (List<Document>) document.get("notas");
-//		if (notasDocument != null) {
-//			List<Nota> notas = new ArrayList<Nota>();
-//			for (Document documentNota : notasDocument) {
-//				notas.add(new Nota(documentNota.getDouble("valor")));
-//			}
-//			aluno.setNotas(notas);
-//		}
-//		List<Document> habilidadesDocument = (List<Document>) document.get("habilidades");
-//		if (habilidadesDocument != null) {
-//			List<Habilidade> habilidades = new ArrayList<Habilidade>();
-//			for (Document documentHabilidade : habilidadesDocument) {
-//				habilidades.add(
-//						new Habilidade(documentHabilidade.getString("nome"), documentHabilidade.getString("nivel")));
-//			}
-//			aluno.setHabilidades(habilidades);
-//		}
+		List<Double> notas = (List<Double>) document.get("notas");
+		if (notas != null) {
+			List<Nota> notasDoAluno = new ArrayList<>();
+			for (Double nota : notas) {
+				notasDoAluno.add(new Nota(nota));
+				aluno.setNotas(notasDoAluno);
+			}
+		}
+
+		List<Document> habilidadesDocument = (List<Document>) document.get("habilidades");
+		if (habilidadesDocument != null) {
+			List<Habilidade> habilidades = new ArrayList<Habilidade>();
+			for (Document documentHabilidade : habilidadesDocument) {
+				habilidades.add(
+						new Habilidade(documentHabilidade.getString("nome"), documentHabilidade.getString("nível")));
+			}
+			aluno.setHabilidades(habilidades);
+		}
 
 //		Document contato = (Document) document.get("contato");
 //		if (contato != null) {
